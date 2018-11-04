@@ -1,0 +1,86 @@
+---
+title: "DS 700 Final Project Part 1"
+author: "Nick Lashinski"
+output: html_notebook
+---
+
+
+```{r}
+library(readr)
+library(dplyr)
+library(ggformula)
+library(readxl)
+```
+***Loading data***
+```{r}
+abbeville = read_excel("Dataset.xlsx", sheet =2)
+violet = read_excel("Dataset.xlsx", sheet =3)
+orleans = read_excel("Dataset.xlsx", sheet =4)
+lafayette = read_excel("Dataset.xlsx", sheet =5)
+baton = read_excel("Dataset.xlsx", sheet =6)
+december = read_excel("Dataset.xlsx", sheet =7)
+```
+***Filtering and Cleaning Violet Data***
+```{r}
+heartKeywords = c("cardi|heart|angia|cor pulmonale|atrial|takotsubo|chordae|coronary")
+violet$Examination <- tolower(violet$Examination)
+#violet$Date <- transform(violet, date = ifelse(grepl(",", violet$Date), as.Date(violet$Date, "%d %b, %Y"), as.Date("1900-01-01") + as.integer(violet$Date)))
+violetShortDate = dplyr::filter(violet, !grepl(",", Date))
+violetLongDate = dplyr::filter(violet, grepl(",", Date))
+violetShortDate$Date <- as.Date("1900-01-01") + as.integer(violetShortDate$Date)
+violetLongDate$Date <- as.Date(violetLongDate$Date, "%d %b, %Y")
+violetFixedDate <- rbind(violetShortDate, violetLongDate)
+#summary(violet)
+#summary(violetFixedDate)
+violet_filtered = dplyr::filter(violetFixedDate, grepl(heartKeywords, Examination))
+violet_filtered = dplyr::filter(violet_filtered, grepl("Abbeville", `Original Hospital Location`))
+summary(violet_filtered)
+```
+***Filtering and Cleaning Orleans Data***
+```{r}
+orleans$Examination <- tolower(orleans$Examination)
+summary(orleans)
+orleans$Date <- as.Date(orleans$Date)
+orleans_filtered = dplyr::filter(orleans, grepl(heartKeywords, Examination))
+orleans_filtered = dplyr::filter(orleans_filtered, grepl("Abbeville", `Original Hospital Location`))
+summary(orleans_filtered)
+```
+***Filtering and Cleaning Lafayette Data***
+```{r}
+lafayette$Examination <- tolower(lafayette$Examination)
+summary(lafayette)
+lafayetteShortDate = dplyr::filter(lafayette, !grepl(",", Date))
+lafayetteLongDate = dplyr::filter(lafayette, grepl(",", Date))
+lafayetteShortDate$Date <- as.Date("1900-01-01") + as.integer(lafayetteShortDate$Date)
+lafayetteLongDate$Date <- as.Date(lafayetteLongDate$Date, "%d %b, %Y")
+lafayetteFixedDate <- rbind(lafayetteShortDate, lafayetteLongDate)
+#summary(lafayetteFixedDate)
+lafayette_filtered = dplyr::filter(lafayetteFixedDate, grepl(heartKeywords, Examination))
+lafayette_filtered = dplyr::filter(lafayette_filtered, grepl("Abbeville", `Original Hospital Location`))
+summary(lafayette_filtered)
+```
+***Filtering and Cleaning Baton Data***
+```{r}
+baton$Examination <- tolower(baton$Examination)
+summary(baton)
+batonShortDate = dplyr::filter(baton, !grepl(",", Date))
+batonLongDate = dplyr::filter(baton, grepl(",", Date))
+batonShortDate$Date <- as.Date("1900-01-01") + as.integer(batonShortDate$Date)
+batonLongDate$Date <- as.Date(batonLongDate$Date, "%d %b, %Y")
+batonFixedDate <- rbind(batonShortDate, batonLongDate)
+#summary(lafayetteFixedDate)
+baton_filtered = dplyr::filter(batonFixedDate, grepl(heartKeywords, Examination))
+baton_filtered = dplyr::filter(baton_filtered, grepl("Abbeville", `Original Hospital Location`))
+summary(baton_filtered)
+```
+***Filtering December 2013 Data***
+```{r}
+heartCodes = c("VVN284|PJU008|ABN441|UMP621|UMX710|TUX333|KPN015|RLX001|WPC608|LLA092|LLN112|TNR628|LOR159|KON421|KOZ198|ROB001")
+december_filtered = dplyr::filter(december, startsWith(`Routing SYSID`, "L839"))
+december_filtered2 = dplyr::filter(december_filtered, endsWith(`Routing SYSID`, "TGU3"))
+december_filtered3 = dplyr::filter(december_filtered, endsWith(`Routing SYSID`, "ROV8"))
+december_filtered4 = rbind(december_filtered2, december_filtered3)
+december_filtered = dplyr::filter(december_filtered4, grepl(heartCodes, `Routing SYSID`))
+summary(december_filtered)
+```
+
