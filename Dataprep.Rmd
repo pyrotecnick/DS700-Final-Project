@@ -11,7 +11,7 @@ library(dplyr)
 library(ggformula)
 library(readxl)
 ```
-***Loading data***
+**Loading data**
 ```{r}
 abbeville = read_excel("Dataset.xlsx", sheet =2)
 violet = read_excel("Dataset.xlsx", sheet =3)
@@ -20,7 +20,15 @@ lafayette = read_excel("Dataset.xlsx", sheet =5)
 baton = read_excel("Dataset.xlsx", sheet =6)
 december = read_excel("Dataset.xlsx", sheet =7)
 ```
-***Filtering and Cleaning Violet Data***
+**Cleaning Abbeville Data**
+```{r}
+abbeville$`Incoming Examinations` <- as.numeric(abbeville$`Incoming Examinations`)
+abbeville$`Incoming Examinations`[which(as.numeric(abbeville$`Incoming Examinations`) > 100000)] = NA
+abbeville$Date <- as.Date(paste(abbeville$Year, abbeville$Month, "01", sep="-"))
+summary(abbeville)
+```
+
+**Filtering and Cleaning Violet Data**
 ```{r}
 heartKeywords = c("cardi|heart|angia|cor pulmonale|atrial|takotsubo|chordae|coronary")
 violet$Examination <- tolower(violet$Examination)
@@ -36,7 +44,7 @@ violet_filtered = dplyr::filter(violetFixedDate, grepl(heartKeywords, Examinatio
 violet_filtered = dplyr::filter(violet_filtered, grepl("Abbeville", `Original Hospital Location`))
 summary(violet_filtered)
 ```
-***Filtering and Cleaning Orleans Data***
+**Filtering and Cleaning Orleans Data**
 ```{r}
 orleans$Examination <- tolower(orleans$Examination)
 summary(orleans)
@@ -45,7 +53,7 @@ orleans_filtered = dplyr::filter(orleans, grepl(heartKeywords, Examination))
 orleans_filtered = dplyr::filter(orleans_filtered, grepl("Abbeville", `Original Hospital Location`))
 summary(orleans_filtered)
 ```
-***Filtering and Cleaning Lafayette Data***
+**Filtering and Cleaning Lafayette Data**
 ```{r}
 lafayette$Examination <- tolower(lafayette$Examination)
 summary(lafayette)
@@ -59,7 +67,7 @@ lafayette_filtered = dplyr::filter(lafayetteFixedDate, grepl(heartKeywords, Exam
 lafayette_filtered = dplyr::filter(lafayette_filtered, grepl("Abbeville", `Original Hospital Location`))
 summary(lafayette_filtered)
 ```
-***Filtering and Cleaning Baton Data***
+**Filtering and Cleaning Baton Data**
 ```{r}
 baton$Examination <- tolower(baton$Examination)
 summary(baton)
@@ -73,7 +81,7 @@ baton_filtered = dplyr::filter(batonFixedDate, grepl(heartKeywords, Examination)
 baton_filtered = dplyr::filter(baton_filtered, grepl("Abbeville", `Original Hospital Location`))
 summary(baton_filtered)
 ```
-***Filtering December 2013 Data***
+**Filtering December 2013 Data**
 ```{r}
 heartCodes = c("VVN284|PJU008|ABN441|UMP621|UMX710|TUX333|KPN015|RLX001|WPC608|LLA092|LLN112|TNR628|LOR159|KON421|KOZ198|ROB001")
 december_filtered = dplyr::filter(december, startsWith(`Routing SYSID`, "L839"))
@@ -83,4 +91,4 @@ december_filtered4 = rbind(december_filtered2, december_filtered3)
 december_filtered = dplyr::filter(december_filtered4, grepl(heartCodes, `Routing SYSID`))
 summary(december_filtered)
 ```
-
+**Collect totals for every month between all the data**
