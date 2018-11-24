@@ -10,6 +10,7 @@ library(readr)
 library(dplyr)
 library(ggformula)
 library(readxl)
+library(lubridate)
 ```
 **Loading data**
 ```{r}
@@ -43,6 +44,9 @@ violetFixedDate <- rbind(violetShortDate, violetLongDate)
 violet_filtered = dplyr::filter(violetFixedDate, grepl(heartKeywords, Examination))
 violet_filtered = dplyr::filter(violet_filtered, grepl("Abbeville", `Original Hospital Location`))
 summary(violet_filtered)
+violet_filtered$visit = 1
+violet_visits = violet_filtered %>% group_by(month=floor_date(Date, "month")) %>%
+   summarize(amount=sum(visit))
 ```
 **Filtering and Cleaning Orleans Data**
 ```{r}
@@ -52,6 +56,9 @@ orleans$Date <- as.Date(orleans$Date)
 orleans_filtered = dplyr::filter(orleans, grepl(heartKeywords, Examination))
 orleans_filtered = dplyr::filter(orleans_filtered, grepl("Abbeville", `Original Hospital Location`))
 summary(orleans_filtered)
+orleans_filtered$visit = 1
+orleans_visits = orleans_filtered %>% group_by(month=floor_date(Date, "month")) %>%
+   summarize(amount=sum(visit))
 ```
 **Filtering and Cleaning Lafayette Data**
 ```{r}
@@ -66,6 +73,9 @@ lafayetteFixedDate <- rbind(lafayetteShortDate, lafayetteLongDate)
 lafayette_filtered = dplyr::filter(lafayetteFixedDate, grepl(heartKeywords, Examination))
 lafayette_filtered = dplyr::filter(lafayette_filtered, grepl("Abbeville", `Original Hospital Location`))
 summary(lafayette_filtered)
+lafayette_filtered$visit = 1
+lafayette_visits = lafayette_filtered %>% group_by(month=floor_date(Date, "month")) %>%
+   summarize(amount=sum(visit))
 ```
 **Filtering and Cleaning Baton Data**
 ```{r}
@@ -80,6 +90,9 @@ batonFixedDate <- rbind(batonShortDate, batonLongDate)
 baton_filtered = dplyr::filter(batonFixedDate, grepl(heartKeywords, Examination))
 baton_filtered = dplyr::filter(baton_filtered, grepl("Abbeville", `Original Hospital Location`))
 summary(baton_filtered)
+baton_filtered$visit = 1
+baton_visits = baton_filtered %>% group_by(month=floor_date(Date, "month")) %>%
+   summarize(amount=sum(visit))
 ```
 **Filtering December 2013 Data**
 ```{r}
@@ -92,3 +105,37 @@ december_filtered = dplyr::filter(december_filtered4, grepl(heartCodes, `Routing
 summary(december_filtered)
 ```
 **Collect totals for every month between all the data**
+```{r}
+#Missing data 200603 200606 200812 200905 200912 201001 201002 201006 201101 201112 201312
+
+#values from the Explanation of Dataset PDF
+Dec09 = 1709
+Jan10 = 1710
+Feb10 = 1710
+abbeville$`Incoming Examinations`[which(abbeville$`Date` == '2009-12-01')] = Dec09
+abbeville$`Incoming Examinations`[which(abbeville$`Date` == '2010-01-01')] = Jan10
+abbeville$`Incoming Examinations`[which(abbeville$`Date` == '2010-02-01')] = Feb10
+#setting the dec 2013 data
+Dec13 = nrow(december_filtered)
+abbeville$`Incoming Examinations`[which(abbeville$`Date` == '2013-12-01')] = Dec13
+#getting visits from other locations
+otherLocations <- rbind(violet_visits,orleans_visits,lafayette_visits,baton_visits)
+otherLocationsTotals = otherLocations %>% group_by(Date=floor_date(month, "month")) %>%
+   summarize(visits=sum(amount))
+#adding vists from other locations
+day1 = '2007-05-01'
+abbeville$`Incoming Examinations`[which(abbeville$`Date` == day1)] = abbeville$`Incoming Examinations`[which(abbeville$`Date` == day1)] + otherLocationsTotals$`visits`[which(otherLocationsTotals$`Date` == day1)]
+day2 = '2007-06-01'
+abbeville$`Incoming Examinations`[which(abbeville$`Date` == day2)] = abbeville$`Incoming Examinations`[which(abbeville$`Date` == day2)] + otherLocationsTotals$`visits`[which(otherLocationsTotals$`Date` == day2)]
+day3 = '2013-05-01'
+abbeville$`Incoming Examinations`[which(abbeville$`Date` == day3)] = abbeville$`Incoming Examinations`[which(abbeville$`Date` == day3)] + otherLocationsTotals$`visits`[which(otherLocationsTotals$`Date` == day3)]
+day4 = '2013-06-01'
+abbeville$`Incoming Examinations`[which(abbeville$`Date` == day4)] = abbeville$`Incoming Examinations`[which(abbeville$`Date` == day4)] + otherLocationsTotals$`visits`[which(otherLocationsTotals$`Date` == day4)]
+day5 = '2013-07-01'
+abbeville$`Incoming Examinations`[which(abbeville$`Date` == day5)] = abbeville$`Incoming Examinations`[which(abbeville$`Date` == day5)] + otherLocationsTotals$`visits`[which(otherLocationsTotals$`Date` == day5)]
+```
+**Impute missing data**
+```{r}
+
+```
+
